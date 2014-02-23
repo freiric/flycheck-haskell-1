@@ -19,15 +19,19 @@ module Flycheck.PrintCabal where
 import Distribution.Verbosity (silent)
 import Distribution.PackageDescription (PackageDescription
                                        ,allBuildInfo
-                                       ,hsSourceDirs)
+                                       ,hsSourceDirs
+                                       ,testBuildInfo
+                                       ,testSuites)
 import Distribution.PackageDescription.Configuration (flattenPackageDescription)
 import Distribution.PackageDescription.Parse (readPackageDescription)
 import System.Environment (getArgs)
 import System.Exit (exitFailure)
-
+import Control.Monad (liftM2)
+import Data.List (nub)
 
 collectSourceDirectories :: PackageDescription -> [FilePath]
-collectSourceDirectories = concatMap hsSourceDirs . allBuildInfo
+collectSourceDirectories = nub . concatMap hsSourceDirs . liftM2 (++)  allBuildInfo
+                                                      (fmap testBuildInfo . testSuites)
 
 
 getSourceDirectories :: FilePath -> IO [FilePath]
